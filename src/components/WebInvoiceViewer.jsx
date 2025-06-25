@@ -232,7 +232,7 @@ ${invoice.company.phone}`
                     <thead>
                       <tr>
                         {invoice.detailedColumns.map(col => (
-                          <th key={col.key} className="py-2 px-2 text-sm font-medium text-gray-700 border-b border-r bg-gray-50">
+                          <th key={col.key} className="py-2 px-2 text-sm font-medium text-gray-700 border-b border-r bg-gray-50 text-center align-middle">
                             {col.label}
                           </th>
                         ))}
@@ -242,7 +242,7 @@ ${invoice.company.phone}`
                       {invoice.detailedRows.map((row, idx) => (
                         <tr key={idx} className="border-b">
                           {invoice.detailedColumns.map(col => (
-                            <td key={col.key} className="py-2 px-2 border-r text-sm text-gray-900">
+                            <td key={col.key} className="py-2 px-2 border-r text-sm text-gray-900 text-center align-middle">
                               {row[col.key] || ''}
                             </td>
                           ))}
@@ -252,48 +252,32 @@ ${invoice.company.phone}`
                   </table>
                 </div>
               ) : (
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b-2 border-gray-300">
-                      <th className="text-left py-3 px-2 text-sm font-semibold text-gray-900">Description</th>
-                      <th className="text-center py-3 px-2 text-sm font-semibold text-gray-900 w-16">Qté</th>
-                      <th className="text-right py-3 px-2 text-sm font-semibold text-gray-900 w-24">Prix HT</th>
-                      <th className="text-center py-3 px-2 text-sm font-semibold text-gray-900 w-16">TVA</th>
-                      <th className="text-right py-3 px-2 text-sm font-semibold text-gray-900 w-24">Total HT</th>
-                      <th className="text-right py-3 px-2 text-sm font-semibold text-gray-900 w-24">Total TTC</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {invoice.items.map((item, index) => {
-                      const totalHT = (item.quantity || 0) * (item.unitPrice || 0)
-                      const vatAmount = totalHT * ((item.vatRate || 0) / 100)
-                      const totalTTC = totalHT + vatAmount
-                      
-                      return (
-                        <tr key={index} className="border-b border-gray-100">
-                          <td className="py-3 px-2 text-sm text-gray-900">
-                            {item.description}
-                          </td>
-                          <td className="py-3 px-2 text-sm text-gray-900 text-center">
-                            {item.quantity}
-                          </td>
-                          <td className="py-3 px-2 text-sm text-gray-900 text-right">
-                            {formatCurrency(item.unitPrice)}
-                          </td>
-                          <td className="py-3 px-2 text-sm text-gray-900 text-center">
-                            {item.vatRate}%
-                          </td>
-                          <td className="py-3 px-2 text-sm text-gray-900 text-right">
-                            {formatCurrency(totalHT)}
-                          </td>
-                          <td className="py-3 px-2 text-sm text-gray-900 text-right font-medium">
-                            {formatCurrency(totalTTC)}
-                          </td>
+                <div className="overflow-x-auto mt-8">
+                  <table className="w-full border">
+                    <thead>
+                      <tr>
+                        <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 border-b border-r bg-gray-50 text-center align-middle">Description</th>
+                        <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 border-b border-r bg-gray-50 text-center align-middle">Qté</th>
+                        <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 border-b border-r bg-gray-50 text-center align-middle">Prix HT</th>
+                        <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 border-b border-r bg-gray-50 text-center align-middle">TVA %</th>
+                        <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 border-b border-r bg-gray-50 text-center align-middle">Total TTC</th>
+                        <th className="w-12 border-b border-r bg-gray-50 align-middle"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {invoice.items && invoice.items.map((item, index) => (
+                        <tr key={index} className="border-b">
+                          <td className="py-2 px-2 border-r text-sm text-gray-900 text-center align-middle">{item.description}</td>
+                          <td className="py-2 px-2 border-r text-sm text-gray-900 text-center align-middle">{item.quantity}</td>
+                          <td className="py-2 px-2 border-r text-sm text-gray-900 text-center align-middle">{formatCurrency(item.unitPrice)}</td>
+                          <td className="py-2 px-2 border-r text-sm text-gray-900 text-center align-middle">{item.vatRate}%</td>
+                          <td className="py-2 px-2 border-r text-sm text-gray-900 text-center align-middle font-medium">{formatCurrency((item.quantity || 0) * (item.unitPrice || 0) * (1 + (item.vatRate || 0) / 100))}</td>
+                          <td className="py-2 px-2 border-r text-center align-middle"></td>
                         </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
 

@@ -149,27 +149,44 @@ const styles = StyleSheet.create({
     margin: 'auto',
     fontSize: 9,
     fontWeight: 'bold',
-    color: '#374151'
+    color: '#374151',
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    display: 'flex',
   },
   tableCell: {
     margin: 'auto',
     fontSize: 9,
-    color: '#374151'
+    color: '#374151',
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    display: 'flex',
   },
   tableCellLeft: {
     fontSize: 9,
     color: '#374151',
-    textAlign: 'left'
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    display: 'flex',
   },
   tableCellRight: {
     fontSize: 9,
     color: '#374151',
-    textAlign: 'right'
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    display: 'flex',
   },
   tableCellCenter: {
     fontSize: 9,
     color: '#374151',
-    textAlign: 'center'
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    display: 'flex',
   },
   totalsSection: {
     flexDirection: 'row',
