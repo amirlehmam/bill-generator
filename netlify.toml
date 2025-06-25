@@ -1,0 +1,41 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "18"
+  STRIPE_PUBLIC_API = "pk_live_51RdZU7EPdXAA6CcA1m3yWQFKeCedVqxHOOaP4R8G39UJfzofBYXBBR2N1eNfcJCsdbRTKunrutKUCAm1rd81r3mN00ANa23JVA"
+  STRIPE_SECRET_API = "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"
+  STRIPE_WEBHOOK_API = "whsec_AFcJhREocfxS72L89uudQQfPE1lxICIQ"
+
+# Configuration des Functions Netlify
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable" 
