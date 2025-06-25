@@ -166,7 +166,7 @@ const InvoicePreview = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Actions */}
-      <div className="no-print flex items-center justify-between">
+      <div className="no-print flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-8 mb-6">
         <Link
           to="/"
           className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
@@ -174,8 +174,7 @@ const InvoicePreview = () => {
           <ArrowLeftIcon className="h-5 w-5" />
           <span>Retour au dashboard</span>
         </Link>
-        
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-2 md:gap-3 justify-start md:justify-end">
           <button
             onClick={generateShareableLink}
             className="btn-secondary flex items-center space-x-2"
@@ -184,7 +183,6 @@ const InvoicePreview = () => {
             <ShareIcon className="h-5 w-5" />
             <span>Partager</span>
           </button>
-
           <button
             onClick={openWebView}
             className="btn-secondary flex items-center space-x-2"
@@ -193,7 +191,6 @@ const InvoicePreview = () => {
             <EyeIcon className="h-5 w-5" />
             <span>Vue web</span>
           </button>
-          
           <Link
             to={`/create?edit=${invoice.id}`}
             className="btn-secondary flex items-center space-x-2"
@@ -201,7 +198,6 @@ const InvoicePreview = () => {
             <PencilIcon className="h-5 w-5" />
             <span>Modifier</span>
           </Link>
-          
           <button
             onClick={handlePrint}
             className="btn-secondary flex items-center space-x-2"
@@ -209,7 +205,6 @@ const InvoicePreview = () => {
             <PrinterIcon className="h-5 w-5" />
             <span>Imprimer</span>
           </button>
-          
           <PDFDownloadLink
             document={<PDFInvoice invoice={invoice} />}
             fileName={`Facture_${invoice.invoiceNumber}_ARLM.pdf`}
@@ -257,9 +252,9 @@ const InvoicePreview = () => {
                 <p>{invoice.company.address}</p>
                 <p>{invoice.company.city}</p>
                 <p>{invoice.company.country}</p>
-                <p className="mt-2">{invoice.company.phone}</p>
-                <p>{invoice.company.email}</p>
-                <p>{invoice.company.website}</p>
+                {invoice.company.phone && <p>{invoice.company.phone}</p>}
+                {invoice.company.email && <p>{invoice.company.email}</p>}
+                {invoice.company.website && <p>{invoice.company.website}</p>}
               </div>
             </div>
             

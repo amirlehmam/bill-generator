@@ -106,17 +106,16 @@ ${invoice.company.phone}`
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-8">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold text-gray-900 truncate">
                 Facture {invoice.invoiceNumber}
               </h1>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs md:text-sm text-gray-600 truncate">
                 Vue publique partagée par {invoice.company.name}
               </p>
             </div>
-            
-            <div className="flex space-x-3">
+            <div className="flex flex-wrap gap-2 md:gap-3 justify-start md:justify-end">
               {invoice.stripePaymentLink && (
                 <a
                   href={invoice.stripePaymentLink}
@@ -128,7 +127,6 @@ ${invoice.company.phone}`
                   <span>Payer {formatCurrency(invoice.totalTTC)}</span>
                 </a>
               )}
-
               <button
                 onClick={sendByEmail}
                 className="btn-secondary flex items-center space-x-2"
@@ -137,7 +135,6 @@ ${invoice.company.phone}`
                 <EnvelopeIcon className="h-5 w-5" />
                 <span>Envoyer par email</span>
               </button>
-              
               <PDFDownloadLink
                 document={<PDFInvoice invoice={invoice} />}
                 fileName={`Facture_${invoice.invoiceNumber}_ARLM.pdf`}
@@ -188,9 +185,9 @@ ${invoice.company.phone}`
                   <p>{invoice.company.address}</p>
                   <p>{invoice.company.city}</p>
                   <p>{invoice.company.country}</p>
-                  <p className="mt-2">Tél : {invoice.company.phone}</p>
-                  <p>Email : {invoice.company.email}</p>
-                  <p>Site : {invoice.company.website}</p>
+                  {invoice.company.phone && <p>{invoice.company.phone}</p>}
+                  {invoice.company.email && <p>{invoice.company.email}</p>}
+                  {invoice.company.website && <p>{invoice.company.website}</p>}
                 </div>
               </div>
               

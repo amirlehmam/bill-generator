@@ -334,9 +334,9 @@ const PDFInvoice = ({ invoice }) => {
             <Text style={styles.text}>{invoice.company.address}</Text>
             <Text style={styles.text}>{invoice.company.city}</Text>
             <Text style={styles.text}>{invoice.company.country}</Text>
-            <Text style={styles.text}>{invoice.company.phone}</Text>
-            <Text style={styles.text}>{invoice.company.email}</Text>
-            <Text style={styles.text}>{invoice.company.website}</Text>
+            {invoice.company.phone && <Text style={styles.text}>{invoice.company.phone}</Text>}
+            {invoice.company.email && <Text style={styles.text}>{invoice.company.email}</Text>}
+            {invoice.company.website && <Text style={styles.text}>{invoice.company.website}</Text>}
           </View>
           
           <View style={styles.column}>
