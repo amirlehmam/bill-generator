@@ -9,8 +9,21 @@ import {
   DocumentArrowUpIcon,
   EyeIcon,
   DocumentArrowDownIcon,
-  LinkIcon
+  LinkIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
+
+const DEFAULT_DETAILED_COLUMNS = [
+  { key: 'description', label: 'Description' },
+  { key: 'activity', label: 'Activités' },
+  { key: 'deliverable', label: 'Livrables' },
+  { key: 'days', label: 'Nbre de jours' },
+  { key: 'rate', label: 'TJ HT' },
+  { key: 'total', label: 'Total' },
+  { key: 'fees', label: 'Frais' }
+]
+
+const DEFAULT_FRAIS_OPTIONS = ['/', 'Au réel', 'Autre...']
 
 const InvoiceCreator = () => {
   const navigate = useNavigate()
@@ -19,6 +32,20 @@ const InvoiceCreator = () => {
   
   const [loading, setLoading] = useState(false)
   const [excelData, setExcelData] = useState(null)
+  const [detailed, setDetailed] = useState(false)
+  const [detailedColumns, setDetailedColumns] = useState(DEFAULT_DETAILED_COLUMNS)
+  const [detailedRows, setDetailedRows] = useState([
+    {
+      description: '',
+      activity: '',
+      deliverable: '',
+      days: '',
+      rate: '',
+      total: '',
+      fees: ''
+    }
+  ])
+  const [customFrais, setCustomFrais] = useState({})
   
   const companyInfo = {
     name: 'ARLM FREELANCE',
@@ -163,30 +190,99 @@ const InvoiceCreator = () => {
     }, { subtotal: 0, vatAmount: 0, total: 0 })
   }
 
+  // Ajout colonne personnalisée
+  const addColumn = () => {
+    const newKey = prompt('Nom de la nouvelle colonne ? (ex: Commentaire)')
+    if (!newKey) return
+    setDetailedColumns([...detailedColumns, { key: newKey.toLowerCase().replace(/\s+/g, '_'), label: newKey }])
+    setDetailedRows(detailedRows.map(row => ({ ...row, [newKey.toLowerCase().replace(/\s+/g, '_')]: '' })))
+  }
+  // Suppression colonne
+  const removeColumn = (key) => {
+    if (detailedColumns.length <= 2) return
+    setDetailedColumns(detailedColumns.filter(col => col.key !== key))
+    setDetailedRows(detailedRows.map(row => {
+      const { [key]: _, ...rest } = row
+      return rest
+    }))
+  }
+  // Ajout ligne
+  const addRow = () => {
+    const emptyRow = {}
+    detailedColumns.forEach(col => { emptyRow[col.key] = '' })
+    setDetailedRows([...detailedRows, emptyRow])
+  }
+  // Suppression ligne
+  const removeRow = (idx) => {
+    if (detailedRows.length <= 1) return
+    setDetailedRows(detailedRows.filter((_, i) => i !== idx))
+  }
+  // Gestion changement cellule
+  const handleCellChange = (idx, key, value) => {
+    const newRows = [...detailedRows]
+    newRows[idx][key] = value
+    setDetailedRows(newRows)
+  }
+  // Gestion frais personnalisé
+  const handleFraisChange = (idx, value) => {
+    if (value === 'Autre...') {
+      setCustomFrais({ ...customFrais, [idx]: '' })
+      handleCellChange(idx, 'fees', '')
+    } else {
+      setCustomFrais({ ...customFrais, [idx]: undefined })
+      handleCellChange(idx, 'fees', value)
+    }
+  }
+
   const onSubmit = async (data) => {
     setLoading(true)
     
     try {
-      const invoiceTotal = calculateInvoiceTotal()
-      
-      // Générer le lien Stripe de manière asynchrone
-      const stripePaymentLink = await generateStripeLink(
-        invoiceTotal.total, 
-        data.invoiceNumber, 
-        data.client?.name || 'Client'
-      )
-      
-      const invoice = {
-        ...data,
-        id: editId || Date.now().toString(),
-        status: 'pending',
-        totalHT: invoiceTotal.subtotal,
-        totalVAT: invoiceTotal.vatAmount,
-        totalTTC: invoiceTotal.total,
-        stripePaymentLink,
-        createdAt: editId ? data.createdAt : new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        company: companyInfo
+      let invoice = {}
+      if (detailed) {
+        invoice = {
+          ...data,
+          id: editId || Date.now().toString(),
+          status: 'pending',
+          detailed: true,
+          detailedColumns,
+          detailedRows,
+          totalHT: 0,
+          totalVAT: 0,
+          totalTTC: 0,
+          stripePaymentLink: '',
+          createdAt: editId ? data.createdAt : new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          company: companyInfo
+        }
+        // Calcul des totaux si colonnes présentes
+        const totalCol = detailedColumns.find(c => c.key === 'total')
+        if (totalCol) {
+          const total = detailedRows.reduce((acc, row) => acc + (parseFloat(row.total) || 0), 0)
+          invoice.totalTTC = total
+        }
+      } else {
+        const invoiceTotal = calculateInvoiceTotal()
+        
+        // Générer le lien Stripe de manière asynchrone
+        const stripePaymentLink = await generateStripeLink(
+          invoiceTotal.total, 
+          data.invoiceNumber, 
+          data.client?.name || 'Client'
+        )
+        
+        invoice = {
+          ...data,
+          id: editId || Date.now().toString(),
+          status: 'pending',
+          totalHT: invoiceTotal.subtotal,
+          totalVAT: invoiceTotal.vatAmount,
+          totalTTC: invoiceTotal.total,
+          stripePaymentLink,
+          createdAt: editId ? data.createdAt : new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          company: companyInfo
+        }
       }
 
       const existingInvoices = JSON.parse(localStorage.getItem('arlm-invoices') || '[]')
@@ -550,6 +646,102 @@ const InvoiceCreator = () => {
             </div>
           </div>
         </div>
+
+        <div className="card">
+          <label className="flex items-center space-x-2 mb-4">
+            <input
+              type="checkbox"
+              checked={detailed}
+              onChange={e => setDetailed(e.target.checked)}
+              className="form-checkbox h-5 w-5 text-primary-600"
+            />
+            <span className="text-sm font-medium text-gray-700">Facture détaillée (tableau avancé)</span>
+          </label>
+        </div>
+        {detailed ? (
+          <div className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">Tableau détaillé</h2>
+              <button type="button" onClick={addColumn} className="btn-secondary flex items-center space-x-2">
+                <PlusIcon className="h-5 w-5" />
+                <span>Ajouter colonne</span>
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full border">
+                <thead>
+                  <tr>
+                    {detailedColumns.map(col => (
+                      <th key={col.key} className="py-2 px-2 text-sm font-medium text-gray-700 border-b border-r bg-gray-50 relative">
+                        {col.label}
+                        {detailedColumns.length > 2 && (
+                          <button type="button" onClick={() => removeColumn(col.key)} className="absolute top-1 right-1 text-red-400 hover:text-red-700"><XMarkIcon className="h-4 w-4" /></button>
+                        )}
+                      </th>
+                    ))}
+                    <th className="w-12"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detailedRows.map((row, idx) => (
+                    <tr key={idx} className="border-b">
+                      {detailedColumns.map(col => (
+                        <td key={col.key} className="py-2 px-2 border-r">
+                          {col.key === 'fees' ? (
+                            <>
+                              <select
+                                value={DEFAULT_FRAIS_OPTIONS.includes(row.fees) ? row.fees : (row.fees ? 'Autre...' : '/')}
+                                onChange={e => handleFraisChange(idx, e.target.value)}
+                                className="input-field"
+                              >
+                                {DEFAULT_FRAIS_OPTIONS.map(opt => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                              {row.fees === 'Autre...' || (!DEFAULT_FRAIS_OPTIONS.includes(row.fees) && row.fees) ? (
+                                <input
+                                  type="text"
+                                  value={customFrais[idx] !== undefined ? customFrais[idx] : row.fees}
+                                  onChange={e => {
+                                    setCustomFrais({ ...customFrais, [idx]: e.target.value })
+                                    handleCellChange(idx, 'fees', e.target.value)
+                                  }}
+                                  className="input-field mt-1"
+                                  placeholder="Saisir frais..."
+                                />
+                              ) : null}
+                            </>
+                          ) : (
+                            <input
+                              type={col.key === 'days' || col.key === 'rate' || col.key === 'total' ? 'number' : 'text'}
+                              value={row[col.key] || ''}
+                              onChange={e => handleCellChange(idx, col.key, e.target.value)}
+                              className="input-field"
+                              placeholder={col.label}
+                            />
+                          )}
+                        </td>
+                      ))}
+                      <td className="py-2 px-2">
+                        {detailedRows.length > 1 && (
+                          <button type="button" onClick={() => removeRow(idx)} className="text-red-600 hover:text-red-900"><TrashIcon className="h-4 w-4" /></button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button type="button" onClick={addRow} className="btn-primary flex items-center space-x-2">
+                <PlusIcon className="h-5 w-5" />
+                <span>Ajouter une ligne</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          // ... prestations classiques ...
+        )}
 
         {/* Actions */}
         <div className="flex justify-end space-x-4">

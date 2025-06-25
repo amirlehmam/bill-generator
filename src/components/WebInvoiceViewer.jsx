@@ -226,48 +226,75 @@ ${invoice.company.phone}`
 
             {/* Services table */}
             <div>
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-gray-300">
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-gray-900">Description</th>
-                    <th className="text-center py-3 px-2 text-sm font-semibold text-gray-900 w-16">Qté</th>
-                    <th className="text-right py-3 px-2 text-sm font-semibold text-gray-900 w-24">Prix HT</th>
-                    <th className="text-center py-3 px-2 text-sm font-semibold text-gray-900 w-16">TVA</th>
-                    <th className="text-right py-3 px-2 text-sm font-semibold text-gray-900 w-24">Total HT</th>
-                    <th className="text-right py-3 px-2 text-sm font-semibold text-gray-900 w-24">Total TTC</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoice.items.map((item, index) => {
-                    const totalHT = (item.quantity || 0) * (item.unitPrice || 0)
-                    const vatAmount = totalHT * ((item.vatRate || 0) / 100)
-                    const totalTTC = totalHT + vatAmount
-                    
-                    return (
-                      <tr key={index} className="border-b border-gray-100">
-                        <td className="py-3 px-2 text-sm text-gray-900">
-                          {item.description}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-900 text-center">
-                          {item.quantity}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-900 text-right">
-                          {formatCurrency(item.unitPrice)}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-900 text-center">
-                          {item.vatRate}%
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-900 text-right">
-                          {formatCurrency(totalHT)}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-900 text-right font-medium">
-                          {formatCurrency(totalTTC)}
-                        </td>
+              {invoice.detailed ? (
+                <div className="overflow-x-auto mt-8">
+                  <table className="w-full border">
+                    <thead>
+                      <tr>
+                        {invoice.detailedColumns.map(col => (
+                          <th key={col.key} className="py-2 px-2 text-sm font-medium text-gray-700 border-b border-r bg-gray-50">
+                            {col.label}
+                          </th>
+                        ))}
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {invoice.detailedRows.map((row, idx) => (
+                        <tr key={idx} className="border-b">
+                          {invoice.detailedColumns.map(col => (
+                            <td key={col.key} className="py-2 px-2 border-r text-sm text-gray-900">
+                              {row[col.key] || ''}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-gray-300">
+                      <th className="text-left py-3 px-2 text-sm font-semibold text-gray-900">Description</th>
+                      <th className="text-center py-3 px-2 text-sm font-semibold text-gray-900 w-16">Qté</th>
+                      <th className="text-right py-3 px-2 text-sm font-semibold text-gray-900 w-24">Prix HT</th>
+                      <th className="text-center py-3 px-2 text-sm font-semibold text-gray-900 w-16">TVA</th>
+                      <th className="text-right py-3 px-2 text-sm font-semibold text-gray-900 w-24">Total HT</th>
+                      <th className="text-right py-3 px-2 text-sm font-semibold text-gray-900 w-24">Total TTC</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoice.items.map((item, index) => {
+                      const totalHT = (item.quantity || 0) * (item.unitPrice || 0)
+                      const vatAmount = totalHT * ((item.vatRate || 0) / 100)
+                      const totalTTC = totalHT + vatAmount
+                      
+                      return (
+                        <tr key={index} className="border-b border-gray-100">
+                          <td className="py-3 px-2 text-sm text-gray-900">
+                            {item.description}
+                          </td>
+                          <td className="py-3 px-2 text-sm text-gray-900 text-center">
+                            {item.quantity}
+                          </td>
+                          <td className="py-3 px-2 text-sm text-gray-900 text-right">
+                            {formatCurrency(item.unitPrice)}
+                          </td>
+                          <td className="py-3 px-2 text-sm text-gray-900 text-center">
+                            {item.vatRate}%
+                          </td>
+                          <td className="py-3 px-2 text-sm text-gray-900 text-right">
+                            {formatCurrency(totalHT)}
+                          </td>
+                          <td className="py-3 px-2 text-sm text-gray-900 text-right font-medium">
+                            {formatCurrency(totalTTC)}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              )}
             </div>
 
             {/* Totals */}

@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
           hash,
           user: {
             email: email,
-            name: 'Amir Lehmann'
+            name: 'Amir Lehmam'
           }
         }
         

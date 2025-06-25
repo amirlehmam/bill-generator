@@ -369,59 +369,81 @@ const PDFInvoice = ({ invoice }) => {
         </View>
 
         {/* Services table */}
-        <View style={styles.table}>
-          {/* Table header */}
-          <View style={styles.tableRow}>
-            <View style={styles.tableColDescription}>
-              <Text style={styles.tableCellHeader}>Description</Text>
-            </View>
-            <View style={styles.tableColHeader}>
-              <Text style={styles.tableCellHeader}>Qté</Text>
-            </View>
-            <View style={styles.tableColHeader}>
-              <Text style={styles.tableCellHeader}>Prix HT</Text>
-            </View>
-            <View style={styles.tableColHeader}>
-              <Text style={styles.tableCellHeader}>TVA</Text>
-            </View>
-            <View style={styles.tableColHeader}>
-              <Text style={styles.tableCellHeader}>Total HT</Text>
-            </View>
-            <View style={styles.tableColHeader}>
-              <Text style={styles.tableCellHeader}>Total TTC</Text>
-            </View>
-          </View>
-
-          {/* Table rows */}
-          {invoice.items.map((item, index) => {
-            const totalHT = (item.quantity || 0) * (item.unitPrice || 0)
-            const vatAmount = totalHT * ((item.vatRate || 0) / 100)
-            const totalTTC = totalHT + vatAmount
-
-            return (
-              <View style={styles.tableRow} key={index}>
-                <View style={styles.tableColDescription}>
-                  <Text style={styles.tableCellLeft}>{item.description}</Text>
+        {invoice.detailed ? (
+          <View style={styles.table}>
+            {/* Table header */}
+            <View style={styles.tableRow}>
+              {invoice.detailedColumns.map(col => (
+                <View key={col.key} style={{ ...styles.tableCol, width: `${100 / invoice.detailedColumns.length}%` }}>
+                  <Text style={styles.tableCellHeader}>{col.label}</Text>
                 </View>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCellCenter}>{item.quantity}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCellRight}>{formatCurrency(item.unitPrice)}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCellCenter}>{item.vatRate}%</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCellRight}>{formatCurrency(totalHT)}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCellRight}>{formatCurrency(totalTTC)}</Text>
-                </View>
+              ))}
+            </View>
+            {/* Table rows */}
+            {invoice.detailedRows.map((row, idx) => (
+              <View key={idx} style={styles.tableRow}>
+                {invoice.detailedColumns.map(col => (
+                  <View key={col.key} style={{ ...styles.tableCol, width: `${100 / invoice.detailedColumns.length}%` }}>
+                    <Text style={styles.tableCell}>{row[col.key] || ''}</Text>
+                  </View>
+                ))}
               </View>
-            )
-          })}
-        </View>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.table}>
+            {/* Table header */}
+            <View style={styles.tableRow}>
+              <View style={styles.tableColDescription}>
+                <Text style={styles.tableCellHeader}>Description</Text>
+              </View>
+              <View style={styles.tableColHeader}>
+                <Text style={styles.tableCellHeader}>Qté</Text>
+              </View>
+              <View style={styles.tableColHeader}>
+                <Text style={styles.tableCellHeader}>Prix HT</Text>
+              </View>
+              <View style={styles.tableColHeader}>
+                <Text style={styles.tableCellHeader}>TVA</Text>
+              </View>
+              <View style={styles.tableColHeader}>
+                <Text style={styles.tableCellHeader}>Total HT</Text>
+              </View>
+              <View style={styles.tableColHeader}>
+                <Text style={styles.tableCellHeader}>Total TTC</Text>
+              </View>
+            </View>
+            {/* Table rows */}
+            {invoice.items && invoice.items.map((item, index) => {
+              const totalHT = (item.quantity || 0) * (item.unitPrice || 0)
+              const vatAmount = totalHT * ((item.vatRate || 0) / 100)
+              const totalTTC = totalHT + vatAmount
+
+              return (
+                <View style={styles.tableRow} key={index}>
+                  <View style={styles.tableColDescription}>
+                    <Text style={styles.tableCellLeft}>{item.description}</Text>
+                  </View>
+                  <View style={styles.tableCol}>
+                    <Text style={styles.tableCellCenter}>{item.quantity}</Text>
+                  </View>
+                  <View style={styles.tableCol}>
+                    <Text style={styles.tableCellRight}>{formatCurrency(item.unitPrice)}</Text>
+                  </View>
+                  <View style={styles.tableCol}>
+                    <Text style={styles.tableCellCenter}>{item.vatRate}%</Text>
+                  </View>
+                  <View style={styles.tableCol}>
+                    <Text style={styles.tableCellRight}>{formatCurrency(totalHT)}</Text>
+                  </View>
+                  <View style={styles.tableCol}>
+                    <Text style={styles.tableCellRight}>{formatCurrency(totalTTC)}</Text>
+                  </View>
+                </View>
+              )
+            })}
+          </View>
+        )}
 
         {/* Totals */}
         <View style={styles.totalsSection}>
