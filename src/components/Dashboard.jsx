@@ -8,7 +8,8 @@ import {
   TrashIcon,
   BanknotesIcon,
   ClockIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  CreditCardIcon
 } from '@heroicons/react/24/outline'
 
 const Dashboard = () => {
@@ -50,6 +51,22 @@ const Dashboard = () => {
       const updatedInvoices = invoices.filter(invoice => invoice.id !== id)
       setInvoices(updatedInvoices)
       localStorage.setItem('arlm-invoices', JSON.stringify(updatedInvoices))
+      
+      // Recalculer les statistiques
+      const newStats = updatedInvoices.reduce((acc, invoice) => {
+        acc.total++
+        acc.totalAmount += invoice.totalTTC || 0
+        
+        if (invoice.status === 'paid') {
+          acc.paid++
+        } else {
+          acc.pending++
+        }
+        
+        return acc
+      }, { total: 0, pending: 0, paid: 0, totalAmount: 0 })
+      
+      setStats(newStats)
     }
   }
 
@@ -61,6 +78,22 @@ const Dashboard = () => {
     )
     setInvoices(updatedInvoices)
     localStorage.setItem('arlm-invoices', JSON.stringify(updatedInvoices))
+    
+    // Recalculer les statistiques
+    const newStats = updatedInvoices.reduce((acc, invoice) => {
+      acc.total++
+      acc.totalAmount += invoice.totalTTC || 0
+      
+      if (invoice.status === 'paid') {
+        acc.paid++
+      } else {
+        acc.pending++
+      }
+      
+      return acc
+    }, { total: 0, pending: 0, paid: 0, totalAmount: 0 })
+    
+    setStats(newStats)
   }
 
   const formatCurrency = (amount) => {
@@ -226,6 +259,15 @@ const Dashboard = () => {
                         >
                           <PencilIcon className="h-4 w-4" />
                         </Link>
+                        {invoice.status !== 'paid' && (
+                          <button
+                            onClick={() => toggleInvoiceStatus(invoice.id)}
+                            className="text-green-600 hover:text-green-900"
+                            title="Marquer comme payée"
+                          >
+                            <CreditCardIcon className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => deleteInvoice(invoice.id)}
                           className="text-red-600 hover:text-red-900"

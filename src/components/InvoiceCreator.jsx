@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import * as XLSX from 'xlsx'
-import { createSimpleStripeLink } from '../services/stripeService'
+import { createDynamicStripePayment } from '../services/stripeService'
 import { 
   PlusIcon, 
   TrashIcon, 
@@ -163,11 +163,19 @@ const InvoiceCreator = () => {
     }, { subtotal: 0, vatAmount: 0, total: 0 })
   }
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setLoading(true)
     
     try {
       const invoiceTotal = calculateInvoiceTotal()
+      
+      // Générer le lien Stripe de manière asynchrone
+      const stripePaymentLink = await generateStripeLink(
+        invoiceTotal.total, 
+        data.invoiceNumber, 
+        data.client?.name || 'Client'
+      )
+      
       const invoice = {
         ...data,
         id: editId || Date.now().toString(),
@@ -175,7 +183,7 @@ const InvoiceCreator = () => {
         totalHT: invoiceTotal.subtotal,
         totalVAT: invoiceTotal.vatAmount,
         totalTTC: invoiceTotal.total,
-        stripePaymentLink: generateStripeLink(invoiceTotal.total, `Facture ${data.invoiceNumber} - ${data.client?.name || 'Client'}`),
+        stripePaymentLink,
         createdAt: editId ? data.createdAt : new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         company: companyInfo
@@ -217,8 +225,13 @@ const InvoiceCreator = () => {
       .replace(/\u202F/g, ' ')  // Remplacer l'espace fine par un espace normal
   }
 
-  const generateStripeLink = (amount, description = '') => {
-    return createSimpleStripeLink(amount, description)
+  const generateStripeLink = async (amount, invoiceNumber, clientName) => {
+    try {
+      return await createDynamicStripePayment(amount, invoiceNumber, clientName)
+    } catch (error) {
+      console.error('Erreur génération lien Stripe:', error)
+      return '#' // Fallback
+    }
   }
 
   return (
@@ -508,15 +521,25 @@ const InvoiceCreator = () => {
                    const invoiceNum = watch('invoiceNumber') || 'TEST'
                    
                    return totals.total > 0 ? (
-                     <a 
-                       href={generateStripeLink(totals.total, `Facture ${invoiceNum} - ${clientName}`)}
-                       target="_blank"
-                       rel="noopener noreferrer"
+                     <button
+                       onClick={async () => {
+                         try {
+                           const stripeLink = await generateStripeLink(totals.total, invoiceNum, clientName)
+                           if (stripeLink && stripeLink !== '#') {
+                             window.open(stripeLink, '_blank')
+                           } else {
+                             alert('Erreur lors de la génération du lien de paiement')
+                           }
+                         } catch (error) {
+                           console.error('Erreur:', error)
+                           alert('Erreur lors de la génération du lien de paiement')
+                         }
+                       }}
                        className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                      >
                        <LinkIcon className="h-4 w-4 mr-2" />
                        Tester : Payer {formatCurrency(totals.total)}
-                     </a>
+                     </button>
                    ) : (
                      <div className="text-sm text-gray-500 italic">
                        Ajoutez des prestations pour voir le bouton de paiement

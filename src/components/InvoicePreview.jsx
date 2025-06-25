@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import PDFInvoice from './PDFInvoice'
-import { createSimpleStripeLink } from '../services/stripeService'
+import { createDynamicStripePayment } from '../services/stripeService'
 import { 
   ArrowLeftIcon, 
   DocumentArrowDownIcon, 
@@ -25,21 +25,33 @@ const InvoicePreview = () => {
     const foundInvoice = invoices.find(inv => inv.id === id)
     
     if (foundInvoice) {
-      // Ensure Stripe payment link is set
-      if (!foundInvoice.stripePaymentLink) {
-        const stripeLink = createSimpleStripeLink(
-          foundInvoice.totalTTC, 
-          `Facture ${foundInvoice.invoiceNumber} - ${foundInvoice.client.name}`
-        )
-        foundInvoice.stripePaymentLink = stripeLink
-        
-        // Update localStorage
-        const updatedInvoices = invoices.map(inv => 
-          inv.id === id ? foundInvoice : inv
-        )
-        localStorage.setItem('arlm-invoices', JSON.stringify(updatedInvoices))
+      // Ensure Stripe payment link is set with correct amount
+      const generateStripeLink = async () => {
+        try {
+          const stripeLink = await createDynamicStripePayment(
+            foundInvoice.totalTTC, 
+            foundInvoice.invoiceNumber,
+            foundInvoice.client.name
+          )
+          foundInvoice.stripePaymentLink = stripeLink
+          
+          // Update localStorage
+          const updatedInvoices = invoices.map(inv => 
+            inv.id === id ? foundInvoice : inv
+          )
+          localStorage.setItem('arlm-invoices', JSON.stringify(updatedInvoices))
+          setInvoice({...foundInvoice})
+        } catch (error) {
+          console.error('Erreur génération lien Stripe:', error)
+          setInvoice(foundInvoice)
+        }
       }
-      setInvoice(foundInvoice)
+
+      if (!foundInvoice.stripePaymentLink) {
+        generateStripeLink()
+      } else {
+        setInvoice(foundInvoice)
+      }
     } else {
       alert('Facture introuvable')
       navigate('/')
