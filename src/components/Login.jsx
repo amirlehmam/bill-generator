@@ -52,12 +52,14 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         {/* Logo et titre */}
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-primary-600 rounded-full flex items-center justify-center">
-            <LockClosedIcon className="h-8 w-8 text-white" />
-          </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+          <img 
+            src="/logo_transparent.png"
+            alt="ARLM Freelance"
+            className="mx-auto h-24 w-auto md:h-32 md:w-auto mb-2"
+          />
+          {/* <h2 className="mt-6 text-3xl font-bold text-gray-900">
             ARLM FREELANCE
-          </h2>
+          </h2> */}
           <p className="mt-2 text-sm text-gray-600">
             Accès sécurisé au générateur de factures
           </p>
