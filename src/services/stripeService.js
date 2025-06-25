@@ -17,7 +17,7 @@ export const createDynamicStripePayment = async (amount, invoiceNumber, clientNa
       cancelUrl: `${window.location.origin}/payment-cancel?invoice=${invoiceNumber}`
     }
 
-    console.log('Création paiement Stripe pour:', requestData)
+    console.log('🔄 Création paiement Stripe dynamique pour:', requestData)
 
     // Appeler la fonction Netlify
     const response = await fetch(functionUrl, {
@@ -28,20 +28,31 @@ export const createDynamicStripePayment = async (amount, invoiceNumber, clientNa
       body: JSON.stringify(requestData)
     })
 
+    console.log('📡 Réponse Netlify status:', response.status)
+
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(`Erreur ${response.status}: ${errorData.error || 'Erreur inconnue'}`)
+      const errorText = await response.text()
+      console.error('❌ Erreur Netlify:', errorText)
+      throw new Error(`Erreur Netlify ${response.status}: ${errorText}`)
     }
 
     const data = await response.json()
+    console.log('✅ Session Stripe créée:', data)
+    
+    if (!data.checkoutUrl) {
+      throw new Error('URL de checkout manquante dans la réponse')
+    }
+
     return data.checkoutUrl
 
   } catch (error) {
-    console.error('Erreur création paiement dynamique:', error)
+    console.error('💥 ERREUR CRITIQUE Stripe:', error)
     
-    // Fallback vers le Payment Link fixe en cas d'erreur
-    console.warn('Utilisation du fallback Payment Link')
-    return createSimpleStripeLink(amount, `Facture ${invoiceNumber} - ${clientName}`)
+    // NE PAS utiliser de fallback - afficher l'erreur à l'utilisateur
+    alert(`Erreur de paiement Stripe: ${error.message}\n\nVérifiez:\n1. Variables d'environnement Netlify\n2. Configuration Stripe\n3. Console développeur pour plus de détails`)
+    
+    // Retourner null au lieu du fallback problématique
+    return null
   }
 }
 
@@ -50,14 +61,9 @@ export const createStripePaymentLink = async (amount, invoiceNumber, clientName)
   return createDynamicStripePayment(amount, invoiceNumber, clientName)
 }
 
-// Fallback : Créer un lien de paiement simple (ancien système)
-export const createSimpleStripeLink = (amount, description = '') => {
-  // ATTENTION: Ce Payment Link a un montant fixe et ne fonctionnera pas pour tous les montants
-  const basePaymentLink = 'https://buy.stripe.com/bJe7sL0kYgb14Jwctm7IY00'
-  
-  console.warn('Utilisation du Payment Link fallback - montant peut être incorrect')
-  return basePaymentLink
-}
+// FONCTION SUPPRIMÉE : createSimpleStripeLink 
+// Cette fonction utilisait un Payment Link fixe à 2800€ et causait des problèmes
+// Utilisez uniquement createDynamicStripePayment maintenant
 
 // Fonction pour créer un paiement avec montant exact (fonction principale)
 export const createDynamicPaymentLink = async (amount, invoiceNumber, clientName) => {

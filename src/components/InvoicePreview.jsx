@@ -25,6 +25,12 @@ const InvoicePreview = () => {
     const foundInvoice = invoices.find(inv => inv.id === id)
     
     if (foundInvoice) {
+      // Générer un shareId si il n'existe pas
+      if (!foundInvoice.shareId) {
+        const shareId = btoa(`${foundInvoice.id}-${Date.now()}`).replace(/[/+=]/g, '')
+        foundInvoice.shareId = shareId
+      }
+
       // Ensure Stripe payment link is set with correct amount
       const generateStripeLink = async () => {
         try {
@@ -35,7 +41,7 @@ const InvoicePreview = () => {
           )
           foundInvoice.stripePaymentLink = stripeLink
           
-          // Update localStorage
+          // Update localStorage with both shareId and stripePaymentLink
           const updatedInvoices = invoices.map(inv => 
             inv.id === id ? foundInvoice : inv
           )
@@ -43,6 +49,11 @@ const InvoicePreview = () => {
           setInvoice({...foundInvoice})
         } catch (error) {
           console.error('Erreur génération lien Stripe:', error)
+          // Still save the shareId even if Stripe fails
+          const updatedInvoices = invoices.map(inv => 
+            inv.id === id ? foundInvoice : inv
+          )
+          localStorage.setItem('arlm-invoices', JSON.stringify(updatedInvoices))
           setInvoice(foundInvoice)
         }
       }
@@ -50,6 +61,11 @@ const InvoicePreview = () => {
       if (!foundInvoice.stripePaymentLink) {
         generateStripeLink()
       } else {
+        // Still update localStorage if shareId was just generated
+        const updatedInvoices = invoices.map(inv => 
+          inv.id === id ? foundInvoice : inv
+        )
+        localStorage.setItem('arlm-invoices', JSON.stringify(updatedInvoices))
         setInvoice(foundInvoice)
       }
     } else {
@@ -61,24 +77,26 @@ const InvoicePreview = () => {
   const generateShareableLink = () => {
     if (!invoice) return
     
+    let currentInvoice = invoice
+    
     // Generate a unique share ID if it doesn't exist
-    if (!invoice.shareId) {
-      const shareId = btoa(`${invoice.id}-${Date.now()}`).replace(/[/+=]/g, '')
-      const updatedInvoice = { ...invoice, shareId }
+    if (!currentInvoice.shareId) {
+      const shareId = btoa(`${currentInvoice.id}-${Date.now()}`).replace(/[/+=]/g, '')
+      currentInvoice = { ...currentInvoice, shareId }
       
       const invoices = JSON.parse(localStorage.getItem('arlm-invoices') || '[]')
       const updatedInvoices = invoices.map(inv => 
-        inv.id === invoice.id ? updatedInvoice : inv
+        inv.id === currentInvoice.id ? currentInvoice : inv
       )
       localStorage.setItem('arlm-invoices', JSON.stringify(updatedInvoices))
-      setInvoice(updatedInvoice)
+      setInvoice(currentInvoice)
     }
     
-    const shareUrl = `${window.location.origin}/invoice/view/${invoice.shareId}`
+    const shareUrl = `${window.location.origin}/invoice/view/${currentInvoice.shareId}`
     
     // Copy to clipboard
     navigator.clipboard.writeText(shareUrl).then(() => {
-      alert('Lien de partage copié dans le presse-papiers!\n\n' + shareUrl)
+      alert('🔗 Lien de partage copié dans le presse-papiers!\n\n' + shareUrl + '\n\n✅ Ce lien permet à vos clients de voir la facture sans se connecter')
     }).catch(() => {
       // Fallback for older browsers
       const textArea = document.createElement('textarea')
@@ -87,21 +105,30 @@ const InvoicePreview = () => {
       textArea.select()
       document.execCommand('copy')
       document.body.removeChild(textArea)
-      alert('Lien de partage copié dans le presse-papiers!\n\n' + shareUrl)
+      alert('🔗 Lien de partage copié dans le presse-papiers!\n\n' + shareUrl + '\n\n✅ Ce lien permet à vos clients de voir la facture sans se connecter')
     })
+    
+    return currentInvoice.shareId
   }
 
   const openWebView = () => {
-    if (!invoice.shareId) {
-      generateShareableLink()
-      setTimeout(() => {
-        const shareUrl = `${window.location.origin}/invoice/view/${invoice.shareId}`
-        window.open(shareUrl, '_blank')
-      }, 100)
-    } else {
-      const shareUrl = `${window.location.origin}/invoice/view/${invoice.shareId}`
-      window.open(shareUrl, '_blank')
+    let shareId = invoice.shareId
+    
+    // Si pas de shareId, le générer
+    if (!shareId) {
+      shareId = generateShareableLink()
     }
+    
+    // Attendre un peu pour que le state soit mis à jour
+    setTimeout(() => {
+      const currentShareId = shareId || invoice.shareId
+      if (currentShareId) {
+        const shareUrl = `${window.location.origin}/invoice/view/${currentShareId}`
+        window.open(shareUrl, '_blank')
+      } else {
+        alert('❌ Erreur lors de la génération du lien de partage')
+      }
+    }, 200)
   }
 
   const handlePrint = () => {
@@ -241,14 +268,14 @@ const InvoicePreview = () => {
                 Facturé à
               </h3>
               <div className="text-sm text-gray-900">
-                <p className="font-bold text-lg">{invoice.client.name}</p>
-                {invoice.client.address && <p>{invoice.client.address}</p>}
+                <p className="font-bold text-lg uppercase">{invoice.client.name}</p>
+                {invoice.client.address && <p className="uppercase">{invoice.client.address}</p>}
                 {(invoice.client.postalCode || invoice.client.city) && (
-                  <p>
+                  <p className="uppercase">
                     {invoice.client.postalCode} {invoice.client.city}
                   </p>
                 )}
-                {invoice.client.country && <p>{invoice.client.country}</p>}
+                {invoice.client.country && <p className="uppercase">{invoice.client.country}</p>}
               </div>
             </div>
           </div>
@@ -372,7 +399,7 @@ const InvoicePreview = () => {
                     <p className="text-xs text-gray-500 mt-1">Paiement sécurisé - Montant exact : {formatCurrency(invoice.totalTTC)}</p>
                   </div>
                   
-                  {invoice.stripePaymentLink && (
+                  {invoice.stripePaymentLink && invoice.stripePaymentLink !== null ? (
                     <a 
                       href={invoice.stripePaymentLink}
                       target="_blank"
@@ -382,6 +409,34 @@ const InvoicePreview = () => {
                       <LinkIcon className="h-4 w-4 mr-2" />
                       Payer {formatCurrency(invoice.totalTTC)} en ligne
                     </a>
+                  ) : (
+                    <button
+                      onClick={async () => {
+                        try {
+                          const stripeLink = await createDynamicStripePayment(
+                            invoice.totalTTC,
+                            invoice.invoiceNumber,
+                            invoice.client.name
+                          )
+                          
+                          if (stripeLink) {
+                            // Sauvegarder le lien et rediriger
+                            const invoices = JSON.parse(localStorage.getItem('arlm-invoices') || '[]')
+                            const updatedInvoices = invoices.map(inv => 
+                              inv.id === invoice.id ? { ...inv, stripePaymentLink: stripeLink } : inv
+                            )
+                            localStorage.setItem('arlm-invoices', JSON.stringify(updatedInvoices))
+                            window.open(stripeLink, '_blank')
+                          }
+                        } catch (error) {
+                          console.error('Erreur génération lien:', error)
+                        }
+                      }}
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      <LinkIcon className="h-4 w-4 mr-2" />
+                      Générer lien de paiement {formatCurrency(invoice.totalTTC)}
+                    </button>
                   )}
                 </div>
               </div>

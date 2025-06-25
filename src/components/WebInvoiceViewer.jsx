@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { LinkIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline'
+import { LinkIcon, DocumentArrowDownIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import PDFInvoice from './PDFInvoice'
 
@@ -45,6 +45,26 @@ const WebInvoiceViewer = () => {
     return new Date(dateString).toLocaleDateString('fr-FR')
   }
 
+  const sendByEmail = () => {
+    const shareUrl = window.location.href
+    const subject = `Facture ${invoice.invoiceNumber} - ${invoice.company.name}`
+    const body = `Bonjour,
+
+Vous trouverez ci-joint la facture ${invoice.invoiceNumber} d'un montant de ${formatCurrency(invoice.totalTTC)}.
+
+Pour consulter la facture en ligne : ${shareUrl}
+
+${invoice.stripePaymentLink ? `Pour effectuer le paiement en ligne : ${invoice.stripePaymentLink}` : ''}
+
+Cordialement,
+${invoice.company.name}
+${invoice.company.email}
+${invoice.company.phone}`
+
+    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    window.location.href = mailtoLink
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -59,10 +79,23 @@ const WebInvoiceViewer = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Facture introuvable</h1>
-          <p className="text-gray-600">{error}</p>
+        <div className="text-center max-w-md">
+          <div className="text-red-500 text-6xl mb-4">📄❌</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Facture introuvable</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+            <h3 className="font-semibold text-blue-900 mb-2">Causes possibles :</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Le lien a expiré ou est invalide</li>
+              <li>• La facture a été supprimée</li>
+              <li>• L'ID de partage est incorrect</li>
+            </ul>
+          </div>
+          
+          <p className="text-sm text-gray-500 mt-4">
+            Contactez <strong>ARLM FREELANCE</strong> pour obtenir un nouveau lien de consultation.
+          </p>
         </div>
       </div>
     )
@@ -95,6 +128,15 @@ const WebInvoiceViewer = () => {
                   <span>Payer {formatCurrency(invoice.totalTTC)}</span>
                 </a>
               )}
+
+              <button
+                onClick={sendByEmail}
+                className="btn-secondary flex items-center space-x-2"
+                title="Envoyer par email"
+              >
+                <EnvelopeIcon className="h-5 w-5" />
+                <span>Envoyer par email</span>
+              </button>
               
               <PDFDownloadLink
                 document={<PDFInvoice invoice={invoice} />}
@@ -157,14 +199,14 @@ const WebInvoiceViewer = () => {
                   Facturé à
                 </h3>
                 <div className="text-sm text-gray-900">
-                  <p className="font-bold text-lg">{invoice.client.name}</p>
-                  {invoice.client.address && <p>{invoice.client.address}</p>}
+                  <p className="font-bold text-lg uppercase">{invoice.client.name}</p>
+                  {invoice.client.address && <p className="uppercase">{invoice.client.address}</p>}
                   {(invoice.client.postalCode || invoice.client.city) && (
-                    <p>
+                    <p className="uppercase">
                       {invoice.client.postalCode} {invoice.client.city}
                     </p>
                   )}
-                  {invoice.client.country && <p>{invoice.client.country}</p>}
+                  {invoice.client.country && <p className="uppercase">{invoice.client.country}</p>}
                 </div>
               </div>
             </div>

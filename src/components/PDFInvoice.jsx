@@ -341,14 +341,14 @@ const PDFInvoice = ({ invoice }) => {
           
           <View style={styles.column}>
             <Text style={styles.sectionTitle}>Facturé à</Text>
-            <Text style={styles.clientName}>{invoice.client.name}</Text>
-            {invoice.client.address && <Text style={styles.text}>{invoice.client.address}</Text>}
+            <Text style={styles.clientName}>{invoice.client.name?.toUpperCase()}</Text>
+            {invoice.client.address && <Text style={styles.text}>{invoice.client.address?.toUpperCase()}</Text>}
             {(invoice.client.postalCode || invoice.client.city) && (
               <Text style={styles.text}>
-                {invoice.client.postalCode} {invoice.client.city}
+                {invoice.client.postalCode?.toUpperCase()} {invoice.client.city?.toUpperCase()}
               </Text>
             )}
-            {invoice.client.country && <Text style={styles.text}>{invoice.client.country}</Text>}
+            {invoice.client.country && <Text style={styles.text}>{invoice.client.country?.toUpperCase()}</Text>}
           </View>
         </View>
 

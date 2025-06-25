@@ -1,4 +1,13 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_API);
+// Vérifier les variables d'environnement possibles
+const stripeSecretKey = process.env.STRIPE_SECRET_API || 
+                       process.env.STRIPE_SECRET_KEY || 
+                       process.env.STRIPE_SECRET
+
+if (!stripeSecretKey) {
+  console.error('❌ Variable d\'environnement Stripe manquante! Vérifiez: STRIPE_SECRET_API, STRIPE_SECRET_KEY, ou STRIPE_SECRET')
+}
+
+const stripe = require('stripe')(stripeSecretKey);
 
 exports.handler = async (event, context) => {
   // Permettre les requêtes CORS
@@ -27,14 +36,28 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    // Vérifier que Stripe est configuré
+    if (!stripeSecretKey) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ 
+          error: 'Configuration Stripe manquante',
+          details: 'Variable d\'environnement STRIPE_SECRET_API non configurée'
+        }),
+      };
+    }
+
     const { amount, currency = 'eur', invoiceNumber, clientName, successUrl, cancelUrl } = JSON.parse(event.body);
+
+    console.log('💰 Création session Stripe:', { amount, currency, invoiceNumber, clientName });
 
     // Validation des paramètres
     if (!amount || amount <= 0) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Invalid amount' }),
+        body: JSON.stringify({ error: 'Montant invalide' }),
       };
     }
 

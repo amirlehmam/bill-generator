@@ -1,11 +1,14 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { DocumentTextIcon, HomeIcon } from '@heroicons/react/24/outline'
+import { DocumentTextIcon, HomeIcon, ArrowRightOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline'
+import { useAuth } from '../contexts/AuthContext'
 
 const Header = () => {
   const location = useLocation()
+  const { logout, getUserInfo } = useAuth()
   
   const isActive = (path) => location.pathname === path
+  const userInfo = getUserInfo()
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -49,6 +52,26 @@ const Header = () => {
               <DocumentTextIcon className="h-5 w-5" />
               <span>Nouvelle Facture</span>
             </Link>
+
+            {/* Séparateur */}
+            <div className="h-6 w-px bg-gray-300"></div>
+
+            {/* Informations utilisateur */}
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <UserIcon className="h-4 w-4" />
+                <span>{userInfo?.name || 'Utilisateur'}</span>
+              </div>
+              
+              <button
+                onClick={logout}
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
+                title="Se déconnecter"
+              >
+                <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                <span>Déconnexion</span>
+              </button>
+            </div>
           </nav>
         </div>
       </div>
