@@ -55,7 +55,7 @@ const Login = () => {
           <img 
             src="/logo_transparent.png"
             alt="ARLM Freelance"
-            className="mx-auto h-24 w-auto md:h-32 md:w-auto mb-2"
+            className="mx-auto h-48 w-auto md:h-64 md:w-auto mb-2"
           />
           {/* <h2 className="mt-6 text-3xl font-bold text-gray-900">
             ARLM FREELANCE
