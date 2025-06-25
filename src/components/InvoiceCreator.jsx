@@ -52,14 +52,15 @@ const InvoiceCreator = () => {
     address: '82 AVENUE JEAN JAURES',
     city: '94400 VITRY-SUR-SEINE',
     country: 'FRANCE',
-    siren: '881228308',
+    siret: '881 228 308 00030',
     ape: '6202A',
     website: 'www.amirlehmam.com',
     phone: '+33 7 87 32 39 96',
     email: 'contact@amirlehmam.com',
     iban: 'FR76 1695 8000 0129 4473 8662 035',
     bic: 'QNTOFRP1XXX',
-    stripeBaseLink: 'https://buy.stripe.com/28o3fscP3dOw6Eo144'
+    stripeBaseLink: 'https://buy.stripe.com/28o3fscP3dOw6Eo144',
+    tvaIntra: 'FR 85 881 228 308',
   }
 
   const { register, control, handleSubmit, setValue, watch, reset } = useForm({

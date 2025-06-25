@@ -359,9 +359,10 @@ ${invoice.company.phone}`
               <h4 className="text-sm font-semibold text-gray-900 mb-3">Informations légales</h4>
               <div className="grid grid-cols-2 gap-6 text-xs text-gray-600">
                 <div>
-                  <p><span className="font-medium">SIREN :</span> {invoice.company.siren}</p>
+                  <p><span className="font-medium">SIRET :</span> {invoice.company.siret}</p>
                   <p><span className="font-medium">Code APE :</span> {invoice.company.ape}</p>
                   <p><span className="font-medium">TVA :</span> Non applicable selon l'art. 293B du CGI</p>
+                  <p><span className="font-medium">TVA intracommunautaire :</span> {invoice.company.tvaIntra}</p>
                 </div>
                 <div>
                   <p>Facture émise conformément aux dispositions légales en vigueur.</p>

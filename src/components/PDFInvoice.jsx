@@ -526,9 +526,10 @@ const PDFInvoice = ({ invoice }) => {
           <Text style={styles.legalTitle}>Informations légales</Text>
           <View style={styles.legalColumns}>
             <View style={styles.legalColumn}>
-              <Text style={styles.legalText}>SIREN : {invoice.company.siren}</Text>
+              <Text style={styles.legalText}>SIRET : {invoice.company.siret}</Text>
               <Text style={styles.legalText}>Code APE : {invoice.company.ape}</Text>
               <Text style={styles.legalText}>TVA : Non applicable selon l'art. 293B du CGI</Text>
+              <Text style={styles.legalText}>TVA intracommunautaire : {invoice.company.tvaIntra}</Text>
             </View>
             <View style={styles.legalColumn}>
               <Text style={styles.legalText}>
