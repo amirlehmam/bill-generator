@@ -448,205 +448,6 @@ const InvoiceCreator = () => {
           </div>
         </div>
 
-        {/* Prestations */}
-        <div className="card">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Prestations</h2>
-            <button
-              type="button"
-              onClick={() => append({ description: '', quantity: 1, unitPrice: 0, vatRate: 0 })}
-              className="btn-primary flex items-center space-x-2"
-            >
-              <PlusIcon className="h-5 w-5" />
-              <span>Ajouter une ligne</span>
-            </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-2 text-sm font-medium text-gray-700">Description</th>
-                  <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 w-20">Qté</th>
-                  <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 w-24">Prix HT</th>
-                  <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 w-20">TVA %</th>
-                  <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 w-24">Total TTC</th>
-                  <th className="w-12"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {fields.map((field, index) => {
-                  const itemTotal = calculateItemTotal(watchedItems[index] || {})
-                  
-                  return (
-                    <tr key={field.id} className="border-b">
-                      <td className="py-2 px-2">
-                        <textarea
-                          {...register(`items.${index}.description`)}
-                          className="input-field resize-none"
-                          rows="2"
-                          placeholder="Description de la prestation"
-                        />
-                      </td>
-                      <td className="py-2 px-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-                          className="input-field text-center"
-                        />
-                      </td>
-                      <td className="py-2 px-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          {...register(`items.${index}.unitPrice`, { valueAsNumber: true })}
-                          className="input-field text-right"
-                        />
-                      </td>
-                      <td className="py-2 px-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          {...register(`items.${index}.vatRate`, { valueAsNumber: true })}
-                          className="input-field text-center"
-                        />
-                      </td>
-                      <td className="py-2 px-2 text-right font-medium">
-                        {formatCurrency(itemTotal.total)}
-                      </td>
-                      <td className="py-2 px-2">
-                        {fields.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => remove(index)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Totaux */}
-          <div className="mt-6 flex justify-end">
-            <div className="w-72 space-y-2">
-              {(() => {
-                const totals = calculateInvoiceTotal()
-                return (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Total HT:</span>
-                      <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Total TVA:</span>
-                      <span className="font-medium">{formatCurrency(totals.vatAmount)}</span>
-                    </div>
-                    <div className="flex justify-between border-t pt-2">
-                      <span className="font-semibold">Total TTC:</span>
-                      <span className="font-bold text-lg">{formatCurrency(totals.total)}</span>
-                    </div>
-                  </>
-                )
-              })()}
-            </div>
-          </div>
-        </div>
-
-        {/* Notes et conditions */}
-        <div className="card">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Notes et conditions</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Conditions de paiement
-              </label>
-              <select {...register('paymentTerms')} className="input-field">
-                <option value="Immédiate">Immédiate</option>
-                <option value="Sous 15 jours">Sous 15 jours</option>
-                <option value="Sous 30 jours">Sous 30 jours</option>
-                <option value="Sous 45 jours">Sous 45 jours</option>
-                <option value="Sous 60 jours">Sous 60 jours</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Notes
-              </label>
-              <textarea
-                {...register('notes')}
-                className="input-field resize-none"
-                rows="3"
-                placeholder="Notes supplémentaires..."
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Prévisualisation du paiement */}
-        <div className="card">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Paiement client</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-gray-700">Virement bancaire</h3>
-              <div className="bg-gray-50 p-4 rounded-lg text-sm">
-                <p><span className="font-medium">IBAN :</span> {companyInfo.iban}</p>
-                <p><span className="font-medium">BIC/SWIFT :</span> {companyInfo.bic}</p>
-                <p><span className="font-medium">Bénéficiaire :</span> {companyInfo.name}</p>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-gray-700">Paiement en ligne Stripe</h3>
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600 mb-3">
-                  Le client pourra payer directement par carte bancaire :
-                </p>
-                                 {(() => {
-                   const totals = calculateInvoiceTotal()
-                   const clientName = watch('client.name') || 'Client test'
-                   const invoiceNum = watch('invoiceNumber') || 'TEST'
-                   
-                   return totals.total > 0 ? (
-                     <button
-                       onClick={async () => {
-                         try {
-                           const stripeLink = await generateStripeLink(totals.total, invoiceNum, clientName)
-                           if (stripeLink && stripeLink !== '#') {
-                             window.open(stripeLink, '_blank')
-                           } else {
-                             alert('Erreur lors de la génération du lien de paiement')
-                           }
-                         } catch (error) {
-                           console.error('Erreur:', error)
-                           alert('Erreur lors de la génération du lien de paiement')
-                         }
-                       }}
-                       className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-                     >
-                       <LinkIcon className="h-4 w-4 mr-2" />
-                       Tester : Payer {formatCurrency(totals.total)}
-                     </button>
-                   ) : (
-                     <div className="text-sm text-gray-500 italic">
-                       Ajoutez des prestations pour voir le bouton de paiement
-                     </div>
-                   )
-                 })()}
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="card">
           <label className="flex items-center space-x-2 mb-4">
             <input
@@ -740,7 +541,196 @@ const InvoiceCreator = () => {
             </div>
           </div>
         ) : (
-          // ... prestations classiques ...
+          <>
+            {/* Prestations */}
+            <div className="card">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">Prestations</h2>
+                <button
+                  type="button"
+                  onClick={() => append({ description: '', quantity: 1, unitPrice: 0, vatRate: 0 })}
+                  className="btn-primary flex items-center space-x-2"
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  <span>Ajouter une ligne</span>
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 px-2 text-sm font-medium text-gray-700">Description</th>
+                      <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 w-20">Qté</th>
+                      <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 w-24">Prix HT</th>
+                      <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 w-20">TVA %</th>
+                      <th className="text-left py-2 px-2 text-sm font-medium text-gray-700 w-24">Total TTC</th>
+                      <th className="w-12"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fields.map((field, index) => {
+                      const itemTotal = calculateItemTotal(watchedItems[index] || {})
+                      return (
+                        <tr key={field.id} className="border-b">
+                          <td className="py-2 px-2">
+                            <textarea
+                              {...register(`items.${index}.description`)}
+                              className="input-field resize-none"
+                              rows="2"
+                              placeholder="Description de la prestation"
+                            />
+                          </td>
+                          <td className="py-2 px-2">
+                            <input
+                              type="number"
+                              step="0.01"
+                              {...register(`items.${index}.quantity`, { valueAsNumber: true })}
+                              className="input-field text-center"
+                            />
+                          </td>
+                          <td className="py-2 px-2">
+                            <input
+                              type="number"
+                              step="0.01"
+                              {...register(`items.${index}.unitPrice`, { valueAsNumber: true })}
+                              className="input-field text-right"
+                            />
+                          </td>
+                          <td className="py-2 px-2">
+                            <input
+                              type="number"
+                              step="0.01"
+                              {...register(`items.${index}.vatRate`, { valueAsNumber: true })}
+                              className="input-field text-center"
+                            />
+                          </td>
+                          <td className="py-2 px-2 text-right font-medium">
+                            {formatCurrency(itemTotal.total)}
+                          </td>
+                          <td className="py-2 px-2">
+                            {fields.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => remove(index)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {/* Totaux */}
+              <div className="mt-6 flex justify-end">
+                <div className="w-72 space-y-2">
+                  {(() => {
+                    const totals = calculateInvoiceTotal()
+                    return (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Total HT:</span>
+                          <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Total TVA:</span>
+                          <span className="font-medium">{formatCurrency(totals.vatAmount)}</span>
+                        </div>
+                        <div className="flex justify-between border-t pt-2">
+                          <span className="font-semibold">Total TTC:</span>
+                          <span className="font-bold text-lg">{formatCurrency(totals.total)}</span>
+                        </div>
+                      </>
+                    )
+                  })()}
+                </div>
+              </div>
+            </div>
+            {/* Notes et conditions */}
+            <div className="card">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Notes et conditions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Conditions de paiement
+                  </label>
+                  <select {...register('paymentTerms')} className="input-field">
+                    <option value="Immédiate">Immédiate</option>
+                    <option value="Sous 15 jours">Sous 15 jours</option>
+                    <option value="Sous 30 jours">Sous 30 jours</option>
+                    <option value="Sous 45 jours">Sous 45 jours</option>
+                    <option value="Sous 60 jours">Sous 60 jours</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes
+                  </label>
+                  <textarea
+                    {...register('notes')}
+                    className="input-field resize-none"
+                    rows="3"
+                    placeholder="Notes supplémentaires..."
+                  />
+                </div>
+              </div>
+            </div>
+            {/* Prévisualisation du paiement */}
+            <div className="card">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Paiement client</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-700">Virement bancaire</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg text-sm">
+                    <p><span className="font-medium">IBAN :</span> {companyInfo.iban}</p>
+                    <p><span className="font-medium">BIC/SWIFT :</span> {companyInfo.bic}</p>
+                    <p><span className="font-medium">Bénéficiaire :</span> {companyInfo.name}</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-700">Paiement en ligne Stripe</h3>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-3">
+                      Le client pourra payer directement par carte bancaire :
+                    </p>
+                    {(() => {
+                      const totals = calculateInvoiceTotal()
+                      const clientName = watch('client.name') || 'Client test'
+                      const invoiceNum = watch('invoiceNumber') || 'TEST'
+                      return totals.total > 0 ? (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const stripeLink = await generateStripeLink(totals.total, invoiceNum, clientName)
+                              if (stripeLink && stripeLink !== '#') {
+                                window.open(stripeLink, '_blank')
+                              } else {
+                                alert('Erreur lors de la génération du lien de paiement')
+                              }
+                            } catch (error) {
+                              console.error('Erreur:', error)
+                              alert('Erreur lors de la génération du lien de paiement')
+                            }
+                          }}
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          <LinkIcon className="h-4 w-4 mr-2" />
+                          Tester : Payer {formatCurrency(totals.total)}
+                        </button>
+                      ) : (
+                        <div className="text-sm text-gray-500 italic">
+                          Ajoutez des prestations pour voir le bouton de paiement
+                        </div>
+                      )
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Actions */}
