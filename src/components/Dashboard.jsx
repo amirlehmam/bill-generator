@@ -198,18 +198,16 @@ const Dashboard = () => {
         </div>
 
         {invoices.length === 0 ? (
-          <div className="text-center py-12">
-            <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
+          <div className="flex flex-col items-center justify-center py-12">
+            <DocumentArrowUpIcon className="h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">Aucune facture</h3>
             <p className="mt-1 text-sm text-gray-500">
               Commencez par créer votre première facture.
             </p>
-            <div className="mt-6">
-              <Link to="/create" className="btn-primary">
-                <PlusIcon className="h-5 w-5 mr-2" />
-                Nouvelle Facture
-              </Link>
-            </div>
+            <Link to="/create" className="btn-primary mt-6 flex items-center justify-center px-6 py-3 text-base font-semibold">
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Nouvelle Facture
+            </Link>
           </div>
         ) : (
           <div className="overflow-x-auto">
